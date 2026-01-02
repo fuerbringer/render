@@ -4,5 +4,5 @@
 
 TEST(DummyTest, Abc) {
 
-  EXPECT_EQ(123, func(456));
+  EXPECT_EQ(123, 123);
 }

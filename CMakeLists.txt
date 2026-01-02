@@ -12,7 +12,7 @@ find_package(SDL2 REQUIRED)
 include_directories(include)
 
 # TARGET: library with core functionality
-add_library(render source/render.cpp)
+add_library(render source/render.cpp source/sdlgraphics.cpp)
 target_compile_options(render PRIVATE -Wall -Wextra -Wpedantic -Werror)
 target_link_libraries(render PRIVATE SDL2::SDL2)
 target_include_directories(render PRIVATE ${SDL2_INCLUDE_DIRS})
