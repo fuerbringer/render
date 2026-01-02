@@ -1,5 +1,5 @@
 #pragma once
-#include "i_platformgraphics.hpp"
+#include "iplatformgraphics.hpp"
 #include <SDL2/SDL.h>
 
 class SDLGraphics final : public IPlatformGraphics

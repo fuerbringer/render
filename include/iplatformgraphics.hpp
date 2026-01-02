@@ -1,26 +1,6 @@
 #pragma once
-#include <cstdint>
 #include <string_view>
-
-struct Framebuffer
-{
-    int width;
-    int height;
-    std::uint32_t* pixels; // ARGB8888
-
-    inline void set(
-        const int x,
-        const int y,
-        const uint32_t color
-        )
-    {
-      if (x < 0 || x >= width ||
-          y < 0 || y >= height) {
-        return; // clip
-      }
-      pixels[y * width + x] = color;
-    }
-};
+#include "framebuffer.hpp"
 
 class IPlatformGraphics
 {
