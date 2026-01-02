@@ -1,7 +1,6 @@
 #include <chrono>
 #include <thread>
 #include <memory>
-#include <algorithm>
 
 #include "sdlgraphics.hpp"
 #include "render.hpp"
@@ -77,11 +76,7 @@ int main()
         // ---- Render ----
         Framebuffer& fb = gfx->framebuffer();
 
-        std::fill(
-            fb.pixels,
-            fb.pixels + fb.width * fb.height,
-            0xFF000000
-        );
+        fb.clear();
 
         renderer.render(fb, cube);
 

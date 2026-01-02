@@ -1,4 +1,5 @@
 #include "framebuffer.hpp"
+#include <algorithm>
 
 void Framebuffer::set(
     const int x,
@@ -11,4 +12,9 @@ void Framebuffer::set(
         return; // clip
     }
     pixels[y * width + x] = color;
+}
+
+void Framebuffer::clear(const uint32_t color)
+{
+    std::fill(pixels, pixels + width * height, color);
 }
