@@ -1,77 +1,144 @@
 #include "render.hpp"
 #include "vector.hpp"
+#include <algorithm>
 #include <vector>
 #include <cmath>
 
 namespace {
 
-inline Vec2f transformViewportToScreen(const Vec2f p, const int width, const int height)
+inline Vec3f transformViewportToScreen(const Vec3f p, const int width, const int height)
 {
     return {
       (p.x + 1) / 2 * width,
-      (1 - (p.y + 1) / 2) * height
+      (1 - (p.y + 1) / 2) * height,
+      p.z
     };
 }
 
-inline Vec2f projectToScreen(const Vec3f p)
+inline Vec3f projectToScreen(const Vec3f p)
 {
-  return { p.x / p.z, p.y / p.z };
+  return { p.x / p.z, p.y / p.z, p.z };
 }
 
-void drawLine(
+inline void drawLineDepth(
     Framebuffer& fb,
-    int x0, int y0,
-    int x1, int y1,
-    uint32_t color
+    const Vec3f a,
+    const Vec3f b,
+    const uint32_t color
 )
 {
-    int dx = std::abs(x1 - x0);
-    int dy = std::abs(y1 - y0);
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
-    int err = dx - dy;
+    int dx = abs(b.x - a.x);
+    int dy = abs(b.y - a.y);
 
-    while (true)
+    int steps = std::max(dx, dy);
+
+    for (int i = 0; i <= steps; ++i)
     {
-        fb.set(x0, y0, color);
-
-        if (x0 == x1 && y0 == y1) {
-            break;
-        }
-
-        int e2 = 2 * err;
-
-        if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
-        }
-
-        if (e2 < dx) {
-            err += dx;
-            y0 += sy;
-        }
+        double t = (steps == 0) ? 0 : (double)i / steps;
+        int x = int(a.x + t * (b.x - a.x));
+        int y = int(a.y + t * (b.y - a.y));
+        double z = a.z + t * (b.z - a.z);
+        fb.set(x, y, z, color);
     }
 }
 
-inline Vec2f project(Framebuffer& fb, const Vec3f p)
+
+inline Vec3f project(Framebuffer& fb, const Vec3f p)
 {
   auto projectedPixel = projectToScreen(p);
   auto screenPixel = transformViewportToScreen(projectedPixel, fb.width, fb.height);
   return screenPixel;
 }
 
+inline bool insideTriangle(const Vec3f& p, const Vec3f& a, const Vec3f& b, const Vec3f& c)
+{
+    double w0 = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    double w1 = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
+    double w2 = (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x);
+
+    return (w0 >= 0 && w1 >= 0 && w2 >= 0) ||
+           (w0 <= 0 && w1 <= 0 && w2 <= 0);
+}
+
+inline Vec3f barycentric(const Vec3f& p, const Vec3f& a, const Vec3f& b, const Vec3f& c)
+{
+    double denom = (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
+    double alpha = ((b.y - c.y)*(p.x - c.x) + (c.x - b.x)*(p.y - c.y)) / denom;
+    double beta  = ((c.y - a.y)*(p.x - c.x) + (a.x - c.x)*(p.y - c.y)) / denom;
+    double gamma = 1.0f - alpha - beta;
+    return Vec3f(alpha, beta, gamma); // z here is unused
+}
+
+inline void drawFilledTriangle(
+    Framebuffer& fb,
+    const Vec3f p0,
+    const Vec3f p1,
+    const Vec3f p2,
+    uint32_t color)
+{
+    int minX = std::min({int(p0.x), int(p1.x), int(p2.x)});
+    int maxX = std::max({int(p0.x), int(p1.x), int(p2.x)});
+    int minY = std::min({int(p0.y), int(p1.y), int(p2.y)});
+    int maxY = std::max({int(p0.y), int(p1.y), int(p2.y)});
+
+    for (int y = minY; y <= maxY; y++)
+    {
+        for (int x = minX; x <= maxX; x++)
+        {
+            Vec3f p(x + 0.5f, y + 0.5f, 0); // z will be interpolated
+
+            if (insideTriangle(p, p0, p1, p2))
+            {
+                // compute barycentric coords
+                const Vec3f bc = barycentric(p, p0, p1, p2);
+
+                // interpolate z
+                const double z = bc.x * p0.z + bc.y * p1.z + bc.z * p2.z;
+
+                fb.set(x, y, z, color);
+            }
+        }
+    }
+}
+
 }
 
 void Renderer::render(Framebuffer& fb, const Object& object)
 {
-  auto vertices = object.getTransformedVertices();
-  auto& faces = object.faces;
-  for(size_t f = 0; f < faces.size(); f++) {
-    for(size_t i = 0; i < faces[f].size(); i++) {
-      const auto a = project(fb, vertices[faces[f][i]]);
-      const auto b = project(fb, vertices[faces[f][(i + 1) % faces[f].size()]]);
+    auto vertices = object.getTransformedVertices();
+    const auto& faces = object.faces;
 
-      drawLine(fb, a.x, a.y, b.x, b.y, 0xFFFFFFFF);
+    for (auto face : faces)
+    {
+        // indices
+        int i0 = face[0];
+        int i1 = face[1];
+        int i2 = face[2];
+
+        // vertices in view/world space
+        Vec3f v0 = vertices[i0];
+        Vec3f v1 = vertices[i1];
+        Vec3f v2 = vertices[i2];
+
+        // compute face normal
+        Vec3f e1 = v1 - v0;
+        Vec3f e2 = v2 - v0;
+        Vec3f normal = e1.cross(e2);
+
+        // back-face culling
+        if (normal.z >= 0) {
+            continue;
+        }
+
+        // project after culling
+        auto p0 = project(fb, v0);
+        auto p1 = project(fb, v1);
+        auto p2 = project(fb, v2);
+
+        drawLineDepth(fb, p0, p1, RED);
+        drawLineDepth(fb, p1, p2, GREEN);
+        drawLineDepth(fb, p2, p0, BLUE);
+        drawFilledTriangle(fb, p0, p1, p2, 0xFF999999);
     }
-  }
 }
+

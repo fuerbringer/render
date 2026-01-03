@@ -1,9 +1,10 @@
 #pragma once
+#include <array>
 #include <vector>
 #include "vector.hpp"
 
 using Vertices = std::vector<Vec3f>;
-using Face = std::vector<int>;
+using Face = Vec3i; // triangle
 using Faces = std::vector<Face>;
 
 struct Transform

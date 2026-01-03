@@ -23,6 +23,15 @@ bool SDLPlatform::initialize(const int width, const int height, const std::strin
   framebuffer_.pixels =
     static_cast<std::uint32_t*>(surface_->pixels);
 
+  framebuffer_.depth = new double[width * height];
+
+  if(framebuffer_.pixels == nullptr) {
+    return false;
+  }
+  if(framebuffer_.depth == nullptr) {
+    return false;
+  }
+
   return true;
 }
 
@@ -49,6 +58,7 @@ bool SDLPlatform::processEvents()
 
 void SDLPlatform::shutdown()
 {
+  delete framebuffer_.depth;
   SDL_DestroyWindow(window_);
   SDL_Quit();
 }
