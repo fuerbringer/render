@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <functional>
 #include "framebuffer.hpp"
 
 class IPlatform
@@ -19,6 +20,8 @@ public:
 
     // returns false when the user wants to quit
     virtual bool processEvents() = 0;
+
+    virtual void registerWireframeToggleCallback(std::function<void()> cb) = 0;
 
     virtual void shutdown() = 0;
 };

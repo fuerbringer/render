@@ -1,4 +1,5 @@
 #include "sdlplatform.hpp"
+#include <iostream>
 
 SDLPlatform::SDLPlatform() {}
 SDLPlatform::~SDLPlatform() {}
@@ -50,10 +51,21 @@ bool SDLPlatform::processEvents()
   SDL_Event e;
   while (SDL_PollEvent(&e))
   {
-    if (e.type == SDL_QUIT)
+    if (e.type == SDL_QUIT) {
       return false;
+    } else if (e.type == SDL_KEYUP) {
+      if (e.key.keysym.sym == SDLK_e) {
+        wireframeToggleCallback();
+      }
+      // TODO other options (backface culling?)
+    }
   }
   return true;
+}
+
+void SDLPlatform::registerWireframeToggleCallback(std::function<void()> cb)
+{
+  wireframeToggleCallback = cb;
 }
 
 void SDLPlatform::shutdown()

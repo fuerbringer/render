@@ -22,8 +22,12 @@ int main()
 
     std::unique_ptr<IPlatform> platform { std::make_unique<SDLPlatform>() }; 
 
-    if (!platform->initialize(800, 600, "Software Renderer"))
+    if (!platform->initialize(800, 600, "Software Renderer")) {
         return -1;
+    }
+    platform->registerWireframeToggleCallback([&](){
+        renderer.toggleWireframe();
+    });
 
     using clock = std::chrono::steady_clock;
 

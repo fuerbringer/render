@@ -157,9 +157,9 @@ void Renderer::render(Framebuffer& fb, const Object& object)
     }
 }
 
-void Renderer::setWireframe(const bool enable)
+void Renderer::toggleWireframe()
 {
-    showWireframe = enable;
+    showWireframe = !showWireframe;
 }
 
 void Renderer::setBackfaceCulling(const bool enable)

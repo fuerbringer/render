@@ -6,7 +6,7 @@ class Renderer
 {
 public:
   void render(Framebuffer& fb, const Object& object);
-  void setWireframe(const bool enable);
+  void toggleWireframe();
   void setBackfaceCulling(const bool enable);
 private:
   bool showWireframe{false};

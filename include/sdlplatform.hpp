@@ -16,11 +16,14 @@ public:
 
     bool processEvents() override;
 
+    void registerWireframeToggleCallback(std::function<void()> cb);
+
     void shutdown() override;
 
 private:
     SDL_Window* window_{nullptr};
     SDL_Surface* surface_{nullptr};
     Framebuffer framebuffer_{};
+    std::function<void()> wireframeToggleCallback{};
 };
 
