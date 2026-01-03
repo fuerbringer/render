@@ -6,10 +6,9 @@
 template <typename T>
 struct Vec3
 {
+  constexpr Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
 
-  Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
-
-  Vec3<T> cross(const Vec3<T> &b)
+  constexpr Vec3<T> cross(const Vec3<T> &b)
   {
     return {
         y * b.z - z * b.y,
@@ -18,7 +17,7 @@ struct Vec3
     };
   }
 
-  T& operator[](const size_t i)
+  constexpr T& operator[](const size_t i)
   {
     switch (i)
     {
@@ -41,7 +40,7 @@ struct Vec3
 };
 
 template <typename T>
-Vec3<T>& operator+=(Vec3<T>& a, const Vec3<T>& b)
+constexpr Vec3<T>& operator+=(Vec3<T>& a, const Vec3<T>& b)
 {
     a.x += b.x;
     a.y += b.y;
@@ -50,7 +49,7 @@ Vec3<T>& operator+=(Vec3<T>& a, const Vec3<T>& b)
 }
 
 template <typename T>
-Vec3<T>& operator*=(Vec3<T>& a, const Vec3<T>& b)
+constexpr Vec3<T>& operator*=(Vec3<T>& a, const Vec3<T>& b)
 {
     a.x *= b.x;
     a.y *= b.y;
@@ -59,39 +58,41 @@ Vec3<T>& operator*=(Vec3<T>& a, const Vec3<T>& b)
 }
 
 template <typename T>
-Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b)
+constexpr Vec3<T> operator-(const Vec3<T>& a, const Vec3<T>& b)
 {
     return { a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
 template <typename T>
-Vec3<T> operator/(const Vec3<T>& a, const double d)
+constexpr Vec3<T> operator/(const Vec3<T>& a, const double d)
 {
     return { a.x / d, a.y / d, a.z / d };
 }
 
 template <typename T>
-T length(const Vec3<T>& v)
+constexpr T length(const Vec3<T>& v)
 {
     return std::sqrt(dot(v, v));
 }
 
 template <typename T>
-Vec3<T> normalize(const Vec3<T>& v)
+constexpr Vec3<T> normalize(const Vec3<T>& v)
 {
-    T len = length(v);
-    if (len == T(0)) return v;
+    T len { length(v) };
+    if (len == T(0)) {
+      return v;
+    }
     return v / len;
 }
 
 template <typename T>
-T dot(const Vec3<T>& a, const Vec3<T>& b)
+constexpr T dot(const Vec3<T>& a, const Vec3<T>& b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 template <typename T>
-Vec3<T> cross(const Vec3<T> &a, const Vec3<T> &b)
+constexpr Vec3<T> cross(const Vec3<T> &a, const Vec3<T> &b)
 {
   return {
       a.y * b.z - a.z * b.y,

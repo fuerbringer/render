@@ -13,7 +13,7 @@ void Framebuffer::set(
     {
         return; // clip
     }
-    const int index = y * width + x;
+    const int index{ y * width + x };
     if (z < depth[index])
     {
         depth[index] = z;

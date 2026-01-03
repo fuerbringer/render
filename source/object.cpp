@@ -60,7 +60,7 @@ void Object::update(const double deltaTime)
 
 Vertices Object::getTransformedVertices() const
 {
-    auto vtrans = vertices;
+    auto vtrans { vertices };
     for(Vec3f& v : vtrans) {
         // scale
         v *= transform.scaling;
