@@ -1,11 +1,15 @@
 # render
 Software renderer for 3D perspective projection graphics.
 
-https://github.com/user-attachments/assets/37e8471c-4fdb-43bf-b912-715cf53ff065
+
+
+https://github.com/user-attachments/assets/a1bcaee3-b2e5-48cb-88c7-99f0c7e21fe1
+
+
 
 # Features
 
-- render arbitrary object made of vertices / faces (triangles)
+- render arbitrary object
 - back face culling
 - z-buffer depth test
 - flat shading
