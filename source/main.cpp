@@ -2,7 +2,7 @@
 #include <thread>
 #include <memory>
 
-#include "sdlgraphics.hpp"
+#include "sdlplatform.hpp"
 #include "render.hpp"
 
 constexpr double TARGET_FPS = 30.0;
@@ -39,8 +39,8 @@ int main()
     auto cube = getCube();
     Renderer renderer;
 
-    std::unique_ptr<IPlatformGraphics> gfx =
-        std::make_unique<SDLGraphics>();
+    std::unique_ptr<IPlatform> gfx =
+        std::make_unique<SDLPlatform>();
 
     if (!gfx->initialize(800, 600, "Software Renderer"))
         return -1;

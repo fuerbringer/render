@@ -1,5 +1,5 @@
 #pragma once
-#include "iplatformgraphics.hpp"
+#include "iplatform.hpp"
 #include "object.hpp"
 
 class Renderer

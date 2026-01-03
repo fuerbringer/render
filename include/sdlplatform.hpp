@@ -1,12 +1,12 @@
 #pragma once
-#include "iplatformgraphics.hpp"
+#include "iplatform.hpp"
 #include <SDL2/SDL.h>
 
-class SDLGraphics final : public IPlatformGraphics
+class SDLPlatform final : public IPlatform
 {
 public:
-    SDLGraphics();
-    ~SDLGraphics();
+    SDLPlatform();
+    ~SDLPlatform();
 
     bool initialize(int width, int height, std::string_view title) override;
 

@@ -2,10 +2,10 @@
 #include <string_view>
 #include "framebuffer.hpp"
 
-class IPlatformGraphics
+class IPlatform
 {
 public:
-    virtual ~IPlatformGraphics() = default;
+    virtual ~IPlatform() = default;
 
     virtual bool initialize(
         int width,

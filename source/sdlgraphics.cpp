@@ -1,9 +1,9 @@
-#include "sdlgraphics.hpp"
+#include "sdlplatform.hpp"
 
-SDLGraphics::SDLGraphics() {}
-SDLGraphics::~SDLGraphics() {}
+SDLPlatform::SDLPlatform() {}
+SDLPlatform::~SDLPlatform() {}
 
-bool SDLGraphics::initialize(const int width, const int height, const std::string_view title) 
+bool SDLPlatform::initialize(const int width, const int height, const std::string_view title) 
 {
   if (SDL_Init(SDL_INIT_VIDEO) != 0)
     return false;
@@ -26,17 +26,17 @@ bool SDLGraphics::initialize(const int width, const int height, const std::strin
   return true;
 }
 
-Framebuffer& SDLGraphics::framebuffer()
+Framebuffer& SDLPlatform::framebuffer()
 {
   return framebuffer_;
 }
 
-void SDLGraphics::present()
+void SDLPlatform::present()
 {
   SDL_UpdateWindowSurface(window_);
 }
 
-bool SDLGraphics::processEvents()
+bool SDLPlatform::processEvents()
 {
   SDL_Event e;
   while (SDL_PollEvent(&e))
@@ -47,7 +47,7 @@ bool SDLGraphics::processEvents()
   return true;
 }
 
-void SDLGraphics::shutdown()
+void SDLPlatform::shutdown()
 {
   SDL_DestroyWindow(window_);
   SDL_Quit();

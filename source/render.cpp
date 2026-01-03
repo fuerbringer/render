@@ -5,7 +5,7 @@
 
 namespace {
 
-Vec2f transformViewportToScreen(const Vec2f p, const int width, const int height)
+inline Vec2f transformViewportToScreen(const Vec2f p, const int width, const int height)
 {
     return {
       (p.x + 1) / 2 * width,
@@ -13,7 +13,7 @@ Vec2f transformViewportToScreen(const Vec2f p, const int width, const int height
     };
 }
 
-Vec2f projectToScreen(const Vec3f p)
+inline Vec2f projectToScreen(const Vec3f p)
 {
   return { p.x / p.z, p.y / p.z };
 }
@@ -53,7 +53,7 @@ void drawLine(
     }
 }
 
-Vec2f project(Framebuffer& fb, const Vec3f p)
+inline Vec2f project(Framebuffer& fb, const Vec3f p)
 {
   auto projectedPixel = projectToScreen(p);
   auto screenPixel = transformViewportToScreen(projectedPixel, fb.width, fb.height);
@@ -68,21 +68,10 @@ void Renderer::render(Framebuffer& fb, const Object& object)
   auto& faces = object.faces;
   for(size_t f = 0; f < faces.size(); f++) {
     for(size_t i = 0; i < faces[f].size(); i++) {
-      auto a = project(fb, vertices[faces[f][i]]);
-      auto b = project(fb, vertices[faces[f][(i + 1) % faces[f].size()]]);
+      const auto a = project(fb, vertices[faces[f][i]]);
+      const auto b = project(fb, vertices[faces[f][(i + 1) % faces[f].size()]]);
 
       drawLine(fb, a.x, a.y, b.x, b.y, 0xFFFFFFFF);
     }
   }
-
-  /*
-  std::vector<Vec3f> obj;
-  obj.push_back({ 0.25,  0.25, 1});
-  obj.push_back({ -0.25,  0.25, 1});
-  obj.push_back({ 0.25,  -0.25, 1});
-  obj.push_back({ -0.25, -0.25, 1});
-  std::vector<std::vector<int>> faces;
-  faces.push_back({0, 1, 2}),
-  renderObject(fb, obj, faces);
-  */
 }
