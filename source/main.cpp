@@ -5,6 +5,7 @@
 #include "sdlplatform.hpp"
 #include "render.hpp"
 #include "demoobjects.hpp"
+#include "camera.hpp"
 
 constexpr double TARGET_FPS = 24.0;
 constexpr double TARGET_FRAME_TIME = 1.0 / TARGET_FPS;
@@ -19,6 +20,7 @@ int main()
 {
     std::array<Object, 2> objs { getCube(), getPenger() };
     Renderer renderer;
+    Camera cam;
 
     std::unique_ptr<IPlatform> platform { std::make_unique<SDLPlatform>() }; 
 
@@ -28,12 +30,36 @@ int main()
     platform->registerWireframeToggleCallback([&](){
         renderer.toggleWireframe();
     });
+    platform->registerForwardCallback([&](double dt){
+        auto fwd = cam.forward();
+        fwd *= {dt,dt,dt};
+        cam.position += fwd;
+    });
+    platform->registerBackwardCallback([&](double dt){
+        auto bwd = cam.forward();
+        bwd *= {-dt,-dt,-dt};
+        cam.position += bwd;
+    });
+    platform->registerRightCallback([&](double dt){
+        auto r = cam.right();
+        r *= {-dt,-dt,-dt};
+        cam.position += r;
+    });
+    platform->registerLeftCallback([&](double dt){
+        auto l = cam.right();
+        l *= {dt,dt,dt};
+        cam.position += l;
+    });
+    platform->registerCameraUpdateCallback([&](double dt, int dx, int dy){
+        cam.updateCamera(dt, dx, dy);
+    });
 
     using clock = std::chrono::steady_clock;
 
     auto lastTime{ clock::now() };
     auto running { true };
 
+        renderer.toggleWireframe();
     while (running)
     {
         auto frameStart = clock::now();
@@ -49,7 +75,7 @@ int main()
             deltaTime = 0.25;
 
         // ---- Events ----
-        running = platform->processEvents();
+        running = platform->processEvents(deltaTime);
 
         // ---- Update ----
         for(auto& obj : objs) {
@@ -61,7 +87,7 @@ int main()
 
         fb.clear(0xFF335588);
         for(auto& obj : objs) {
-            renderer.render(fb, obj);
+            renderer.render(fb, cam, obj);
         }
         platform->present();
 

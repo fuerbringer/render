@@ -42,12 +42,50 @@ inline void drawLine(
     }
 }
 
+Vec3f rotateX(const Vec3f& v, double angle)
+{
+    double c = std::cos(angle);
+    double s = std::sin(angle);
+
+    return {
+        v.x,
+        v.y * c - v.z * s,
+        v.y * s + v.z * c
+    };
+}
+
+Vec3f rotateY(const Vec3f& v, double angle)
+{
+    double c = std::cos(angle);
+    double s = std::sin(angle);
+
+    return {
+        v.x * c + v.z * s,
+        v.y,
+       -v.x * s + v.z * c
+    };
+}
+
+Vec3f worldToView(const Vec3f& v, const Camera& cam)
+{
+    // 1. Translate world opposite to camera
+    Vec3f p = v - cam.position;
+
+    // 2. Undo camera yaw (Y axis)
+    p = rotateY(p, -cam.yaw);
+
+    // 3. Undo camera pitch (X axis)
+    p = rotateX(p, -cam.pitch);
+
+    return p;
+}
+
 
 inline Vec3f project(Framebuffer& fb, const Vec3f p)
 {
-  auto projectedPixel = projectToScreen(p);
-  auto screenPixel = transformViewportToScreen(projectedPixel, fb.width, fb.height);
-  return screenPixel;
+    auto projectedPixel = projectToScreen(p);
+    auto screenPixel = transformViewportToScreen(projectedPixel, fb.width, fb.height);
+    return screenPixel;
 }
 
 inline bool insideTriangle(const Vec3f& p, const Vec3f& a, const Vec3f& b, const Vec3f& c)
@@ -76,10 +114,15 @@ inline void drawFilledTriangle(
     const Vec3f p2,
     const uint32_t color)
 {
-    const int minX = std::min({int(p0.x), int(p1.x), int(p2.x)});
-    const int maxX = std::max({int(p0.x), int(p1.x), int(p2.x)});
-    const int minY = std::min({int(p0.y), int(p1.y), int(p2.y)});
-    const int maxY = std::max({int(p0.y), int(p1.y), int(p2.y)});
+    int minX = std::min({int(p0.x), int(p1.x), int(p2.x)});
+    int maxX = std::max({int(p0.x), int(p1.x), int(p2.x)});
+    int minY = std::min({int(p0.y), int(p1.y), int(p2.y)});
+    int maxY = std::max({int(p0.y), int(p1.y), int(p2.y)});
+
+    minX = std::clamp(minX, 0, fb.width - 1);
+    maxX = std::clamp(maxX, 0, fb.width - 1);
+    minY = std::clamp(minY, 0, fb.height - 1);
+    maxY = std::clamp(maxY, 0, fb.height - 1);
 
     for (int y = minY; y <= maxY; y++)
     {
@@ -105,7 +148,7 @@ inline uint32_t computeFlatLambertShading(const Vec3f &normal)
 {
   constexpr auto ambient { 0.2 };
   // hardcoded light
-  constexpr auto lightDir { normalize(Vec3f{0.5f, 1.0f, -0.3f}) };
+  const auto lightDir { normalize(Vec3f{0.5f, 1.0f, -0.3f}) };
   auto intensity = dot(normal, lightDir);
   intensity = std::fmax(0, intensity);
   intensity = ambient + intensity * (1.0 - ambient);
@@ -119,24 +162,33 @@ inline uint32_t computeFlatLambertShading(const Vec3f &normal)
 }
 }
 
-void Renderer::render(Framebuffer& fb, const Object& object)
+void Renderer::render(Framebuffer& fb, Camera& cam, const Object& object)
 {
+    constexpr auto near = 0.2;
+    constexpr auto far = 50;
     auto vertices { object.getTransformedVertices() };
     const auto& faces { object.faces };
 
     for (auto face : faces)
     {
         // vertices in world space
-        const auto v0 { vertices[face[0]] };
-        const auto v1 { vertices[face[1]] };
-        const auto v2 { vertices[face[2]] };
+        const auto v0 { worldToView(vertices[face[0]], cam) };
+        const auto v1 { worldToView(vertices[face[1]], cam) };
+        const auto v2 { worldToView(vertices[face[2]], cam) };
+
+        if (v0.z <= near || v1.z <= near || v2.z <= near) {
+            continue;
+        }
+        if (v0.z >= far && v1.z >= far && v2.z >= far) {
+            continue;
+        }
 
         const auto e1 { v1 - v0 };
         const auto e2 { v2 - v0 };
         const auto normal { normalize(cross(e1, e2)) };
 
         // TODO fix magic number (why does 0.3 work better than 0)
-        if (doBackfaceCulling && normal.z > 0.3) { 
+        if (doBackfaceCulling && normal.z >= 0.3) { 
             continue;
         }
 

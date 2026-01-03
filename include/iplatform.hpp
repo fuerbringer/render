@@ -19,9 +19,14 @@ public:
     virtual void present() = 0;
 
     // returns false when the user wants to quit
-    virtual bool processEvents() = 0;
+    virtual bool processEvents(const double deltaTime) = 0;
 
     virtual void registerWireframeToggleCallback(std::function<void()> cb) = 0;
+    virtual void registerForwardCallback(std::function<void(double)> cb) = 0;
+    virtual void registerBackwardCallback(std::function<void(double)> cb) = 0;
+    virtual void registerLeftCallback(std::function<void(double)> cb) = 0;
+    virtual void registerRightCallback(std::function<void(double)> cb) = 0;
+    virtual void registerCameraUpdateCallback(std::function<void(double,int,int)> cb) = 0;
 
     virtual void shutdown() = 0;
 };

@@ -70,9 +70,26 @@ constexpr Vec3<T> operator/(const Vec3<T>& a, const double d)
 }
 
 template <typename T>
+constexpr Vec3<T> operator3(Vec3<T> a, double d)
+{
+    return { a.x * d, a.y * d, a.z * d };
+}
+
+template <typename T>
 constexpr T length(const Vec3<T>& v)
 {
     return std::sqrt(dot(v, v));
+}
+
+
+template <typename T>
+Vec3<T> normalize( Vec3<T>&& v)
+{
+    T len { length(v) };
+    if (len == T(0)) {
+      return v;
+    }
+    return v / len;
 }
 
 template <typename T>
