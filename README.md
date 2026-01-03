@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/37e8471c-4fdb-43bf-b912-715cf53ff065
 - render arbitrary object made of vertices / faces (triangles)
 - back face culling
 - z-buffer depth test
-- wireframe and trangle face fill
+- flat shading
 - platform independant through dependency inversion (currently using SDL2)
 - CPU only: No GPU / OpenGL / DirectX whatsoever!
 
@@ -16,7 +16,6 @@ https://github.com/user-attachments/assets/37e8471c-4fdb-43bf-b912-715cf53ff065
 
 - camera
 - load from `.obj`
-- shading (phong, etc)
 - unit tests
 - refactoring
 - performance

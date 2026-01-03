@@ -101,6 +101,22 @@ inline void drawFilledTriangle(
     }
 }
 
+static inline uint32_t computeFlatLambertShading(const Vec3f &normal)
+{
+  // hardcoded light
+  Vec3f lightDir = normalize(Vec3f{0.5f, 1.0f, -0.3f});
+  double intensity = dot(normal, lightDir);
+  intensity = std::fmax(0, intensity);
+  float ambient = 0.2;
+  intensity = ambient + intensity * (1.0 - ambient);
+  uint8_t c = static_cast<uint8_t>(intensity * 255);
+  uint32_t color =
+      (255 << 24) | // alpha
+      (c << 16) |   // red
+      (c << 8) |    // green
+      c;            // blue
+  return color;
+}
 }
 
 void Renderer::render(Framebuffer& fb, const Object& object)
@@ -123,22 +139,26 @@ void Renderer::render(Framebuffer& fb, const Object& object)
         // compute face normal
         Vec3f e1 = v1 - v0;
         Vec3f e2 = v2 - v0;
-        Vec3f normal = e1.cross(e2);
+        Vec3f normal = normalize(cross(e1, e2));
 
         // back-face culling
         if (normal.z >= 0) {
             continue;
         }
 
+        const auto color = computeFlatLambertShading(normal);
+
         // project after culling
         auto p0 = project(fb, v0);
         auto p1 = project(fb, v1);
         auto p2 = project(fb, v2);
 
+/*
         drawLineDepth(fb, p0, p1, RED);
         drawLineDepth(fb, p1, p2, GREEN);
         drawLineDepth(fb, p2, p0, BLUE);
-        drawFilledTriangle(fb, p0, p1, p2, 0xFF999999);
+*/
+        drawFilledTriangle(fb, p0, p1, p2, color);
     }
 }
 

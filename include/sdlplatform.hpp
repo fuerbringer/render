@@ -19,8 +19,8 @@ public:
     void shutdown() override;
 
 private:
-    SDL_Window* window_ = nullptr;
-    SDL_Surface* surface_ = nullptr;
+    SDL_Window* window_{nullptr};
+    SDL_Surface* surface_{nullptr};
     Framebuffer framebuffer_{};
 };
 
