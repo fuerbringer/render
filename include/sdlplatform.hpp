@@ -12,7 +12,7 @@ public:
 
     Framebuffer& framebuffer() override;
 
-    void present();
+    void present() override;
 
     bool processEvents(const double deltaTime) override;
 

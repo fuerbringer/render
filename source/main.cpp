@@ -20,7 +20,6 @@ int main()
 {
     std::array<Object, 2> objs { getCube(), getPenger() };
     Renderer renderer;
-    Camera cam;
 
     std::unique_ptr<IPlatform> platform { std::make_unique<SDLPlatform>() }; 
 
@@ -31,27 +30,27 @@ int main()
         renderer.toggleWireframe();
     });
     platform->registerForwardCallback([&](double dt){
-        auto fwd = cam.forward();
+        auto fwd = renderer.getCamera().forward();
         fwd *= {dt,dt,dt};
-        cam.position += fwd;
+        renderer.getCamera().position += fwd;
     });
     platform->registerBackwardCallback([&](double dt){
-        auto bwd = cam.forward();
+        auto bwd = renderer.getCamera().forward();
         bwd *= {-dt,-dt,-dt};
-        cam.position += bwd;
+        renderer.getCamera().position += bwd;
     });
     platform->registerRightCallback([&](double dt){
-        auto r = cam.right();
+        auto r = renderer.getCamera().right();
         r *= {-dt,-dt,-dt};
-        cam.position += r;
+        renderer.getCamera().position += r;
     });
     platform->registerLeftCallback([&](double dt){
-        auto l = cam.right();
+        auto l = renderer.getCamera().right();
         l *= {dt,dt,dt};
-        cam.position += l;
+        renderer.getCamera().position += l;
     });
     platform->registerCameraUpdateCallback([&](double dt, int dx, int dy){
-        cam.updateCamera(dt, dx, dy);
+        renderer.getCamera().updateCamera(dt, dx, dy);
     });
 
     using clock = std::chrono::steady_clock;
@@ -64,34 +63,26 @@ int main()
     {
         auto frameStart = clock::now();
 
-        // ---- Time step ----
         std::chrono::duration<double> delta { frameStart - lastTime };
         lastTime = frameStart;
 
         auto deltaTime { delta.count() };
 
-        // Clamp deltaTime (prevents huge jumps if debugger pauses)
         if (deltaTime > 0.25)
+            // Clamp deltaTime (prevents huge jumps if debugger pauses)
             deltaTime = 0.25;
 
-        // ---- Events ----
         running = platform->processEvents(deltaTime);
 
-        // ---- Update ----
-        for(auto& obj : objs) {
-            rotateObj(obj, M_PI * deltaTime / 10);
-        }
+        rotateObj(objs[0], M_PI * deltaTime / 10);
 
-        // ---- Render ----
         auto& fb { platform->framebuffer() };
-
         fb.clear(0xFF335588);
         for(auto& obj : objs) {
-            renderer.render(fb, cam, obj);
+            renderer.render(fb, obj);
         }
         platform->present();
 
-        // ---- Frame pacing ----
         const auto frameEnd { clock::now() };
         std::chrono::duration<double> frameDuration =
             frameEnd - frameStart;

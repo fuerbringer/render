@@ -23,7 +23,7 @@ Vec3f Camera::up()
 
 void Camera::updateCamera(double dt, double dx, double dy)
 {
-    double sensitivity = 0.002;
+    constexpr auto sensitivity { 0.01 };
 
     yaw   += dt * dx * sensitivity;
     pitch -= dt * dy * sensitivity;

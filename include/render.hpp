@@ -6,10 +6,12 @@
 class Renderer
 {
 public:
-  void render(Framebuffer& fb, Camera& cam, const Object& object);
+  void render(Framebuffer& fb, const Object& object);
   void toggleWireframe();
   void setBackfaceCulling(const bool enable);
+  Camera& getCamera();
 private:
   bool showWireframe{false};
   bool doBackfaceCulling{true};
+  Camera cam;
 };

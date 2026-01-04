@@ -27,25 +27,25 @@ inline void drawLine(
     const uint32_t color
 )
 {
-    const int dx = abs(b.x - a.x);
-    const int dy = abs(b.y - a.y);
+    const int dx { abs(b.x - a.x) };
+    const int dy { abs(b.y - a.y) };
 
-    const int steps = std::max(dx, dy);
+    const int steps { std::max(dx, dy) };
 
-    for (int i = 0; i <= steps; ++i)
+    for (auto i { 0 }; i <= steps; ++i)
     {
-        const auto t = (steps == 0) ? 0 : static_cast<double>(i) / steps;
-        const auto x = int(a.x + t * (b.x - a.x));
-        const auto y = int(a.y + t * (b.y - a.y));
-        const auto z = a.z + t * (b.z - a.z);
+        const auto t { (steps == 0) ? 0 : static_cast<double>(i) / steps };
+        const auto x { int(a.x + t * (b.x - a.x)) };
+        const auto y { int(a.y + t * (b.y - a.y)) };
+        const auto z { a.z + t * (b.z - a.z) };
         fb.set(x, y, z, color);
     }
 }
 
-Vec3f rotateX(const Vec3f& v, double angle)
+inline Vec3f rotateX(const Vec3f& v, double angle)
 {
-    double c = std::cos(angle);
-    double s = std::sin(angle);
+    const auto c { std::cos(angle) };
+    const auto s { std::sin(angle) };
 
     return {
         v.x,
@@ -54,10 +54,10 @@ Vec3f rotateX(const Vec3f& v, double angle)
     };
 }
 
-Vec3f rotateY(const Vec3f& v, double angle)
+inline Vec3f rotateY(const Vec3f& v, double angle)
 {
-    double c = std::cos(angle);
-    double s = std::sin(angle);
+    const auto c { std::cos(angle) };
+    const auto s { std::sin(angle) };
 
     return {
         v.x * c + v.z * s,
@@ -66,33 +66,29 @@ Vec3f rotateY(const Vec3f& v, double angle)
     };
 }
 
-Vec3f worldToView(const Vec3f& v, const Camera& cam)
+inline Vec3f worldToView(const Vec3f& v, const Camera& cam)
 {
     // 1. Translate world opposite to camera
-    Vec3f p = v - cam.position;
-
+    Vec3f p { v - cam.position };
     // 2. Undo camera yaw (Y axis)
     p = rotateY(p, -cam.yaw);
-
     // 3. Undo camera pitch (X axis)
-    p = rotateX(p, -cam.pitch);
-
-    return p;
+    return rotateX(p, -cam.pitch);
 }
 
 
 inline Vec3f project(Framebuffer& fb, const Vec3f p)
 {
-    auto projectedPixel = projectToScreen(p);
-    auto screenPixel = transformViewportToScreen(projectedPixel, fb.width, fb.height);
+    auto projectedPixel { projectToScreen(p) };
+    auto screenPixel { transformViewportToScreen(projectedPixel, fb.width, fb.height) };
     return screenPixel;
 }
 
 inline bool insideTriangle(const Vec3f& p, const Vec3f& a, const Vec3f& b, const Vec3f& c)
 {
-    const auto w0 = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
-    const auto w1 = (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x);
-    const auto w2 = (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x);
+    const auto w0 { (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x) };
+    const auto w1 { (c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x) };
+    const auto w2 { (a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x) };
 
     return (w0 >= 0 && w1 >= 0 && w2 >= 0) ||
            (w0 <= 0 && w1 <= 0 && w2 <= 0);
@@ -100,11 +96,11 @@ inline bool insideTriangle(const Vec3f& p, const Vec3f& a, const Vec3f& b, const
 
 inline Vec3f barycentric(const Vec3f& p, const Vec3f& a, const Vec3f& b, const Vec3f& c)
 {
-    const auto denom = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
-    const auto alpha = ((b.y - c.y) *(p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom;
-    const auto beta  = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
-    const auto gamma = 1.0 - alpha - beta;
-    return Vec3f(alpha, beta, gamma); // z here is unused
+    const auto denom { (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y) };
+    const auto alpha { ((b.y - c.y) *(p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom };
+    const auto beta  { ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom };
+    const auto gamma { 1.0 - alpha - beta };
+    return { alpha, beta, gamma }; // z here is unused
 }
 
 inline void drawFilledTriangle(
@@ -114,29 +110,29 @@ inline void drawFilledTriangle(
     const Vec3f p2,
     const uint32_t color)
 {
-    int minX = std::min({int(p0.x), int(p1.x), int(p2.x)});
-    int maxX = std::max({int(p0.x), int(p1.x), int(p2.x)});
-    int minY = std::min({int(p0.y), int(p1.y), int(p2.y)});
-    int maxY = std::max({int(p0.y), int(p1.y), int(p2.y)});
+    int minX { std::min({int(p0.x), int(p1.x), int(p2.x)}) };
+    int maxX { std::max({int(p0.x), int(p1.x), int(p2.x)}) };
+    int minY { std::min({int(p0.y), int(p1.y), int(p2.y)}) };
+    int maxY { std::max({int(p0.y), int(p1.y), int(p2.y)}) };
 
     minX = std::clamp(minX, 0, fb.width - 1);
     maxX = std::clamp(maxX, 0, fb.width - 1);
     minY = std::clamp(minY, 0, fb.height - 1);
     maxY = std::clamp(maxY, 0, fb.height - 1);
 
-    for (int y = minY; y <= maxY; y++)
+    for (auto y { minY}; y <= maxY; y++)
     {
-        for (int x = minX; x <= maxX; x++)
+        for (auto x { minX }; x <= maxX; x++)
         {
             Vec3f p{x + 0.5f, y + 0.5f, 0}; // z will be interpolated
 
             if (insideTriangle(p, p0, p1, p2))
             {
                 // compute barycentric coords
-                const auto bc = barycentric(p, p0, p1, p2);
+                const auto bc { barycentric(p, p0, p1, p2) };
 
                 // interpolate z
-                const auto z = bc.x * p0.z + bc.y * p1.z + bc.z * p2.z;
+                const auto z { bc.x * p0.z + bc.y * p1.z + bc.z * p2.z };
 
                 fb.set(x, y, z, color);
             }
@@ -149,10 +145,10 @@ inline uint32_t computeFlatLambertShading(const Vec3f &normal)
   constexpr auto ambient { 0.2 };
   // hardcoded light
   const auto lightDir { normalize(Vec3f{0.5f, 1.0f, -0.3f}) };
-  auto intensity = dot(normal, lightDir);
+  auto intensity { dot(normal, lightDir) };
   intensity = std::fmax(0, intensity);
   intensity = ambient + intensity * (1.0 - ambient);
-  const uint8_t c = static_cast<uint8_t>(intensity * 255);
+  const uint8_t c { static_cast<uint8_t>(intensity * 255)};
   const uint32_t color =
       (255 << 24) | // alpha
       (c << 16) |   // red
@@ -162,10 +158,10 @@ inline uint32_t computeFlatLambertShading(const Vec3f &normal)
 }
 }
 
-void Renderer::render(Framebuffer& fb, Camera& cam, const Object& object)
+void Renderer::render(Framebuffer& fb, const Object& object)
 {
-    constexpr auto near = 0.2;
-    constexpr auto far = 50;
+    constexpr auto near { 0.2 };
+    constexpr auto far { 50 };
     auto vertices { object.getTransformedVertices() };
     const auto& faces { object.faces };
 
@@ -217,4 +213,9 @@ void Renderer::toggleWireframe()
 void Renderer::setBackfaceCulling(const bool enable)
 {
     doBackfaceCulling = enable;
+}
+
+Camera& Renderer::getCamera()
+{
+    return cam;
 }
